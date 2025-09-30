@@ -1,0 +1,24 @@
+{
+  "name": "spotifyplaylistserverv2_ryan",
+  "version": "2.0.0",
+  "description": "melanjutkan tugas expressJs yaitu: melengkapi fitur seperti (CRUD), melakukan validasi menggunakan library joi, serta menggunakan sistem modular untuk penbuatan struktur folder (supaya lebih mudah ketika terjadi suatu kesalahan)",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/app.js"
+  },
+  "author": "muhammadryanhandhikasusanto",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "joi": "^18.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.1.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
