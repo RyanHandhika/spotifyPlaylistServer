@@ -2,9 +2,9 @@ import userServices from "../services/userServices.js";
 import userSchema from "../validations/userValidations.js";
 import bcrypt from "bcrypt";
 
-const getUser = (req, res, next) => {
+const getUsers = async (req, res, next) => {
   try {
-    const user = userServices.getUser();
+    const user = await userServices.getUsers();
     return res.status(200).json({
       success: true,
       message: "Data users!",
@@ -17,23 +17,23 @@ const getUser = (req, res, next) => {
 
 const register = async (req, res, next) => {
   try {
-    const validasi = userSchema.register.validate(req.body, {
+    const validasi = await userSchema.register.validateAsync(req.body, {
       abortEarly: false,
     });
 
-    if (validasi.error) {
+    if (!validasi) {
       throw {
         code: 400,
-        message: validasi.error.details.map((e) => e.message),
+        message: validasi.details.map((e) => e.message),
       };
     }
 
-    const { username, email, password } = validasi.value;
+    const { username, email, password } = validasi;
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const result = userServices.register(username, email, hashedPassword);
+    const result = await userServices.register(username, email, hashedPassword);
 
     return res.status(201).json({
       success: true,
@@ -62,7 +62,7 @@ const login = async (req, res, next) => {
 };
 
 export default {
-  getUser,
+  getUsers,
   register,
   login,
 };

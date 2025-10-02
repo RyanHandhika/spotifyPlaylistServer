@@ -24,8 +24,7 @@ const addSong = Joi.object({
 });
 
 const updateSong = Joi.object({
-  id: Joi.string().length(12).required().messages({
-    "id.length": "ID lagu harus sebanyak 12 karakter!",
+  id: Joi.string().required().messages({
     "id.required": "ID lagu harus diisi!",
     "id.empty": "ID lagu tidak boleh kosong!",
     "id.string": "data yang anda masukkan tidak valid!",
@@ -55,8 +54,7 @@ const updateSong = Joi.object({
   });
 
 const getSongById = Joi.object({
-  id: Joi.string().length(12).required().messages({
-    "id.length": "ID lagu harus sebanyak 12 karakter!",
+  id: Joi.string().required().messages({
     "id.required": "ID lagu harus diisi!",
     "id.empty": "ID lagu tidak boleh kosong!",
     "id.string": "data yang anda masukkan tidak valid!",
@@ -64,8 +62,7 @@ const getSongById = Joi.object({
 });
 
 const deleteSong = Joi.object({
-  id: Joi.string().length(12).required().messages({
-    "id.length": "ID lagu harus sebanyak 12 karakter!",
+  id: Joi.string().required().messages({
     "id.required": "ID lagu harus diisi!",
     "id.empty": "ID lagu tidak boleh kosong!",
     "id.string": "data yang anda masukkan tidak valid!",
@@ -73,8 +70,7 @@ const deleteSong = Joi.object({
 });
 
 const playSong = Joi.object({
-  id: Joi.string().length(12).required().messages({
-    "id.length": "ID lagu harus sebanyak 12 karakter!",
+  id: Joi.string().required().messages({
     "id.required": "ID lagu harus diisi!",
     "id.empty": "ID lagu tidak boleh kosong!",
     "id.string": "data yang anda masukkan tidak valid!",

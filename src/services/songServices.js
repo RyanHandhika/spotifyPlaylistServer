@@ -1,22 +1,45 @@
-import data from "../data/songPlaylist.js";
-import SongModel from "../models/songModels.js";
+// import data from "../data/songPlaylist.js";
+// import SongModel from "../models/songModels.js";
+import { PrismaClient } from "@prisma/client";
 
-const getPlaylist = (id_user) => {
-  const songs = data.filter((song) => song.id_user === id_user);
+const prisma = new PrismaClient();
+const data = prisma.song;
 
-  if (songs.length === 0) {
+const getPlaylist = async (userId) => {
+  console.log(userId);
+  const songs = await data.findMany({
+    where: {
+      userId,
+    },
+  });
+
+  return songs;
+};
+
+const getSongById = async (id, userId) => {
+  try {
+    const song = await data.findUnique({
+      where: {
+        id,
+        userId,
+      },
+    });
+    return song;
+  } catch (error) {
     throw {
       code: 404,
-      message:
-        "Data playlist anda masih kosong, silahkan tambah terlebih dahulu!",
+      message: `Lagu dengan id ${id} tidak ditemukan!`,
     };
-  } else {
-    return songs;
   }
 };
 
-const getSongById = (id, id_user) => {
-  const song = data.find((s) => s.id === id && s.id_user === id_user);
+const playSongById = async (id, userId) => {
+  const song = await data.findUnique({
+    where: {
+      id,
+      userId,
+    },
+  });
 
   if (!song) {
     throw {
@@ -24,63 +47,74 @@ const getSongById = (id, id_user) => {
       message: `Lagu dengan id ${id} tidak ditemukan!`,
     };
   }
-
   return song;
 };
 
-const playSongById = (id, id_user) => {
-  const song = data.find((s) => s.id === id && s.id_user === id_user);
-
-  if (!song) {
-    throw {
-      code: 404,
-      message: `Lagu dengan id ${id} tidak ditemukan!`,
-    };
-  }
-  return song;
-};
-
-const addSong = (id_user, title, artists, url) => {
-  const newSong = new SongModel(id_user, title, artists, url);
-
-  data.push(newSong);
+const addSong = async (userId, title, artists, url) => {
+  const newSong = await data.create({
+    data: {
+      userId,
+      title,
+      artists,
+      url,
+    },
+  });
 
   return newSong;
 };
 
-const updateSongById = (song, id_user) => {
+const updateSongById = async (song, userId) => {
   const { id, title, artists, url } = song;
 
-  const songIndex = data.findIndex((i) => i.id === id && i.id_user === id_user);
+  const songSelect = await data.findFirst({
+    where: {
+      id,
+      userId,
+    },
+  });
 
-  if (songIndex === -1) {
+  if (!songSelect) {
     throw {
       code: 404,
       message: `Lagu dengan id ${id} tidak ditemukan!`,
     };
   }
 
-  data[songIndex].title = title || data[songIndex].title;
-  data[songIndex].artists = artists || data[songIndex].artists;
-  data[songIndex].url = url || data[songIndex].url;
-  data[songIndex].updatedAt = new Date().toISOString();
+  const updateData = data.update({
+    where: {
+      id,
+    },
+    data: {
+      title: title || data[songSelect].title,
+      artists: artists || data[songSelect].artists,
+      url: url || data[songSelect].url,
+      updatedAt: new Date().toISOString(),
+    },
+  });
 
-  return data[songIndex];
+  return updateData;
 };
 
-const deleteSongById = (id, id_user) => {
-  const songIndex = data.findIndex((i) => i.id === id && i.id_user === id_user);
+const deleteSongById = async (id, userId) => {
+  const songIndex = await data.findFirst({
+    where: {
+      id,
+      userId,
+    },
+  });
 
-  if (songIndex === -1) {
+  console.log(songIndex);
+
+  if (!songIndex) {
     throw {
       code: 404,
       message: `Lagu dengan id ${id} tidak ditemukan!`,
     };
   }
 
-  const deleted = data.splice(songIndex, 1);
+  const deleted = await data.delete({ where: { id } });
 
-  return deleted[0];
+  return deleted;
 };
 
 export default {

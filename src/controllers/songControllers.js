@@ -1,10 +1,10 @@
 import songService from "../services/songServices.js";
 import songSchema from "../validations/songValidations.js";
 
-const getPlaylist = (req, res, next) => {
+const getPlaylist = async (req, res, next) => {
   try {
-    const id_user = req.user.id;
-    const songs = songService.getPlaylist(id_user);
+    const userId = req.user.id;
+    const songs = await songService.getPlaylist(userId);
 
     return res.status(200).json({
       success: true,
@@ -16,19 +16,19 @@ const getPlaylist = (req, res, next) => {
   }
 };
 
-const getSongById = (req, res, next) => {
+const getSongById = async (req, res, next) => {
   try {
-    const validate = songSchema.getSongById.validate(req.params);
+    const validate = await songSchema.getSongById.validateAsync(req.params);
 
-    if (validate.error) {
+    if (!validate) {
       throw {
         code: 400,
         message: validate.error.details.map((d) => d.message),
       };
     }
 
-    const id = validate.value.id;
-    const result = songService.getSongById(id, req.user.id);
+    const id = validate.id;
+    const result = await songService.getSongById(id, req.user.id);
 
     return res.status(200).json({
       success: true,
@@ -40,22 +40,22 @@ const getSongById = (req, res, next) => {
   }
 };
 
-const playSongById = (req, res, next) => {
+const playSongById = async (req, res, next) => {
   try {
-    const validate = songSchema.playSong.validate(req.params);
+    const validate = await songSchema.playSong.validateAsync(req.params);
 
-    if (validate.error) {
+    if (!validate) {
       throw {
         code: 400,
-        message: validate.error.details.map((d) => d.message),
+        message: validate.details.map((d) => d.message),
       };
     }
 
-    const result = songService.playSongById(value.id, req.user.id);
+    const result = await songService.playSongById(validate.id, req.user.id);
 
     return res.status(200).json({
       success: true,
-      message: `Lagu dengan id ${id} sedang dimainkan!`,
+      message: `Lagu dengan id ${validate.id} sedang dimainkan!`,
       data: result,
     });
   } catch (error) {
@@ -63,24 +63,24 @@ const playSongById = (req, res, next) => {
   }
 };
 
-const addSong = (req, res, next) => {
+const addSong = async (req, res, next) => {
   try {
-    const validate = songSchema.addSong.validate(req.body, {
+    const validate = await songSchema.addSong.validateAsync(req.body, {
       abortEarly: false,
     });
 
-    if (validate.error) {
+    if (!validate) {
       throw {
         code: 400,
-        message: validate.error.details.map((d) => d.message),
+        message: validate.details.map((d) => d.message),
       };
     }
 
-    const id_user = req.user.id;
-    const title = value.title;
-    const artists = value.artists;
-    const url = value.url;
-    const result = songService.addSong(id_user, title, artists, url);
+    const userId = req.user.id;
+    const title = validate.title;
+    const artists = validate.artists;
+    const url = validate.url;
+    const result = await songService.addSong(userId, title, artists, url);
 
     return res.status(200).json({
       success: true,
@@ -92,7 +92,7 @@ const addSong = (req, res, next) => {
   }
 };
 
-const updateSongById = (req, res, next) => {
+const updateSongById = async (req, res, next) => {
   try {
     const data = {
       id: req.params.id,
@@ -101,13 +101,13 @@ const updateSongById = (req, res, next) => {
       url: req.body.url,
     };
 
-    const validatedData = songSchema.updateSong.validate(data, {
+    const validate = await songSchema.updateSong.validateAsync(data, {
       abortEarly: false,
     });
 
-    const result = songService.updateSongById(validatedData.value, req.user.id);
+    const result = await songService.updateSongById(validate, req.user.id);
 
-    if (!result.success) {
+    if (!result) {
       throw {
         code: 400,
         message: `Lagu gagal diperbarui: ${result.message}`,
@@ -116,7 +116,7 @@ const updateSongById = (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: `Lagu dengan id ${id} berhasil diperbarui!`,
+      message: `Lagu dengan id ${validate.id} berhasil diperbarui!`,
       data: result,
     });
   } catch (error) {
@@ -124,13 +124,13 @@ const updateSongById = (req, res, next) => {
   }
 };
 
-const deleteSongById = (req, res, next) => {
+const deleteSongById = async (req, res, next) => {
   try {
-    const validate = songSchema.deleteSong.validate(req.params);
-    const id = validate.value.id;
-    const result = songService.deleteSongById(id, req.user.id);
+    const validate = await songSchema.deleteSong.validateAsync(req.params);
+    const id = validate.id;
+    const result = await songService.deleteSongById(id, req.user.id);
 
-    if (!result.success) {
+    if (!result) {
       throw {
         code: 400,
         message: `Lagu gagal dihapus: ${result.message}`,

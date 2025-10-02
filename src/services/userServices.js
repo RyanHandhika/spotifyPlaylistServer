@@ -1,22 +1,23 @@
-import data from "../data/users.js";
-import userModel from "../models/userModels.js";
+// import data from "../data/users.js";
+// import userModel from "../models/userModels.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { PrismaClient } from "@prisma/client";
 
 // const JWT_SECRET = process.env.JWT_SECRET;
+const prisma = new PrismaClient();
+const data = prisma.user;
 
-const getUser = () => {
-  if (data.length === 0) {
-    throw {
-      code: 404,
-      message: "Data user masih kosong, silahkan tambah terlebih dahulu!",
-    };
-  }
-  return data;
+const getUsers = async () => {
+  const allData = await data.findMany();
+  return allData;
 };
 
-const register = (username, email, password) => {
-  const duplicatedEmail = data.find((user) => user.email === email);
+const register = async (username, email, password) => {
+  const duplicatedEmail = await data.findUnique({
+    where: { email },
+  });
+
   if (duplicatedEmail) {
     throw {
       code: 409,
@@ -24,14 +25,18 @@ const register = (username, email, password) => {
     };
   }
 
-  const newUser = new userModel(username, email, password);
-  data.push(newUser);
-
+  const newUser = await data.create({
+    data: {
+      username,
+      email,
+      password,
+    },
+  });
   return newUser;
 };
 
 const login = async ({ email, password }) => {
-  const user = data.find((u) => u.email === email);
+  const user = await data.findUnique({ where: { email } });
 
   if (!user) {
     throw new ResponseError(401, "invalid");
@@ -46,17 +51,15 @@ const login = async ({ email, password }) => {
     { id: user.id, email: user.email },
     process.env.JWT_SECRET,
     {
-      expiresIn: "15m",
+      expiresIn: "60m",
     }
   );
-
-  console.log(token);
 
   return token;
 };
 
 export default {
-  getUser,
+  getUsers,
   register,
   login,
 };
